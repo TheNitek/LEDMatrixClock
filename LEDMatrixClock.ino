@@ -14,11 +14,11 @@ NTPClient timeClient(ntpUDP, "de.pool.ntp.org", 1*3600, 60000);
 
 MD_Parola P = MD_Parola(MD_MAX72XX::FC16_HW, D2, 4);
 
-uint8_t scrollSpeed = 0;    // default frame delay value
-//textEffect_t scrollEffect = PA_SCROLL_LEFT;
-textEffect_t scrollEffect = PA_PRINT;
+uint8_t scrollSpeed = 40;    // default frame delay value
+textEffect_t scrollEffect = PA_SCROLL_LEFT;
+//textEffect_t scrollEffect = PA_PRINT;
 textPosition_t scrollAlign = PA_CENTER;
-uint16_t scrollPause = 2000; // in milliseconds
+uint16_t scrollPause = 0; // in milliseconds
 
 WiFiManager wifiManager;
 
@@ -48,6 +48,8 @@ void setup() {
   wifiManager.autoConnect("TimerSetup", "timertimer");
   timeClient.begin();
 
+  P.displayText(buffer, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
+
   Serial.println("Done");
 }
 
@@ -55,18 +57,13 @@ void loop() {
   timeClient.update();
 
   unsigned long timeDiff = (targetTime - timeClient.getEpochTime());
-  if(timeDiff > 1000000) {
-    timeDiff = timeDiff/60;
-  }
-
-  if(timeDiff != lastDiff) {
-    sprintf(buffer, "%lu", timeDiff);
-    Serial.println(buffer);
-    P.displayText(buffer, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
-    lastDiff = timeDiff;
-  }
 
   if(P.displayAnimate()) {
+    if(timeDiff != lastDiff) {
+      sprintf(buffer, "%lu", timeDiff);
+      Serial.println(buffer);
+      lastDiff = timeDiff;
+    }
     P.displayReset();
   }
   
